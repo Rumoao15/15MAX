@@ -14,7 +14,249 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      concursos: {
+        Row: {
+          coluna1_qtd: number
+          coluna2_qtd: number
+          coluna3_qtd: number
+          coluna4_qtd: number
+          coluna5_qtd: number
+          created_at: string
+          d1: number
+          d10: number
+          d11: number
+          d12: number
+          d13: number
+          d14: number
+          d15: number
+          d2: number
+          d3: number
+          d4: number
+          d5: number
+          d6: number
+          d7: number
+          d8: number
+          d9: number
+          data_concurso: string
+          id: string
+          linha1_qtd: number
+          linha2_qtd: number
+          linha3_qtd: number
+          linha4_qtd: number
+          linha5_qtd: number
+          numero_concurso: number
+          qtd_fibonacci: number
+          qtd_impares: number
+          qtd_multiplos_3: number
+          qtd_pares: number
+          qtd_primos: number
+          repetidas_do_anterior: number
+          soma_dezenas: number
+        }
+        Insert: {
+          coluna1_qtd?: number
+          coluna2_qtd?: number
+          coluna3_qtd?: number
+          coluna4_qtd?: number
+          coluna5_qtd?: number
+          created_at?: string
+          d1: number
+          d10: number
+          d11: number
+          d12: number
+          d13: number
+          d14: number
+          d15: number
+          d2: number
+          d3: number
+          d4: number
+          d5: number
+          d6: number
+          d7: number
+          d8: number
+          d9: number
+          data_concurso: string
+          id?: string
+          linha1_qtd?: number
+          linha2_qtd?: number
+          linha3_qtd?: number
+          linha4_qtd?: number
+          linha5_qtd?: number
+          numero_concurso: number
+          qtd_fibonacci?: number
+          qtd_impares?: number
+          qtd_multiplos_3?: number
+          qtd_pares?: number
+          qtd_primos?: number
+          repetidas_do_anterior?: number
+          soma_dezenas?: number
+        }
+        Update: {
+          coluna1_qtd?: number
+          coluna2_qtd?: number
+          coluna3_qtd?: number
+          coluna4_qtd?: number
+          coluna5_qtd?: number
+          created_at?: string
+          d1?: number
+          d10?: number
+          d11?: number
+          d12?: number
+          d13?: number
+          d14?: number
+          d15?: number
+          d2?: number
+          d3?: number
+          d4?: number
+          d5?: number
+          d6?: number
+          d7?: number
+          d8?: number
+          d9?: number
+          data_concurso?: string
+          id?: string
+          linha1_qtd?: number
+          linha2_qtd?: number
+          linha3_qtd?: number
+          linha4_qtd?: number
+          linha5_qtd?: number
+          numero_concurso?: number
+          qtd_fibonacci?: number
+          qtd_impares?: number
+          qtd_multiplos_3?: number
+          qtd_pares?: number
+          qtd_primos?: number
+          repetidas_do_anterior?: number
+          soma_dezenas?: number
+        }
+        Relationships: []
+      }
+      estatisticas_dezenas: {
+        Row: {
+          atraso_atual: number
+          dezena: number
+          e_fibonacci: boolean
+          e_multiplo_3: boolean
+          e_par: boolean
+          e_primo: boolean
+          frequencia_total: number
+          id: string
+          maior_atraso_historico: number
+        }
+        Insert: {
+          atraso_atual?: number
+          dezena: number
+          e_fibonacci?: boolean
+          e_multiplo_3?: boolean
+          e_par?: boolean
+          e_primo?: boolean
+          frequencia_total?: number
+          id?: string
+          maior_atraso_historico?: number
+        }
+        Update: {
+          atraso_atual?: number
+          dezena?: number
+          e_fibonacci?: boolean
+          e_multiplo_3?: boolean
+          e_par?: boolean
+          e_primo?: boolean
+          frequencia_total?: number
+          id?: string
+          maior_atraso_historico?: number
+        }
+        Relationships: []
+      }
+      jogos_gerados: {
+        Row: {
+          d1: number
+          d10: number
+          d11: number
+          d12: number
+          d13: number
+          d14: number
+          d15: number
+          d2: number
+          d3: number
+          d4: number
+          d5: number
+          d6: number
+          d7: number
+          d8: number
+          d9: number
+          data_geracao: string
+          id: string
+          referencia_concurso: number | null
+          tipo_modelo: string
+        }
+        Insert: {
+          d1: number
+          d10: number
+          d11: number
+          d12: number
+          d13: number
+          d14: number
+          d15: number
+          d2: number
+          d3: number
+          d4: number
+          d5: number
+          d6: number
+          d7: number
+          d8: number
+          d9: number
+          data_geracao?: string
+          id?: string
+          referencia_concurso?: number | null
+          tipo_modelo: string
+        }
+        Update: {
+          d1?: number
+          d10?: number
+          d11?: number
+          d12?: number
+          d13?: number
+          d14?: number
+          d15?: number
+          d2?: number
+          d3?: number
+          d4?: number
+          d5?: number
+          d6?: number
+          d7?: number
+          d8?: number
+          d9?: number
+          data_geracao?: string
+          id?: string
+          referencia_concurso?: number | null
+          tipo_modelo?: string
+        }
+        Relationships: []
+      }
+      trincas_frequentes: {
+        Row: {
+          dezena1: number
+          dezena2: number
+          dezena3: number
+          frequencia_trinca: number
+          id: string
+        }
+        Insert: {
+          dezena1: number
+          dezena2: number
+          dezena3: number
+          frequencia_trinca?: number
+          id?: string
+        }
+        Update: {
+          dezena1?: number
+          dezena2?: number
+          dezena3?: number
+          frequencia_trinca?: number
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
