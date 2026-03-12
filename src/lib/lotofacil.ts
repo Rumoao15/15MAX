@@ -25,6 +25,7 @@ export interface ImportResult {
 function normalizeHeader(h: string): string {
   return h
     .trim()
+    .replace(/^\uFEFF/, "")
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -33,7 +34,7 @@ function normalizeHeader(h: string): string {
     .replace(/^_|_$/g, "");
 }
 
-const CONCURSO_ALIASES = ["concurso", "nr_concurso", "numero_concurso", "n_concurso", "numconcurso", "no_concurso"];
+const CONCURSO_ALIASES = ["concurso", "nr_concurso", "numero_concurso", "n_concurso", "numconcurso", "no_concurso", "n_concurso", "num_concurso"];
 const DATA_ALIASES = ["data", "data_concurso", "dt", "dt_concurso", "data_sorteio"];
 
 function getDezenaAliases(n: number): string[] {
@@ -65,7 +66,9 @@ function parseDate(value: string): Date | null {
 }
 
 export function parseCSV(content: string) {
-  const lines = content.split(/\r?\n/).filter(l => l.trim());
+  // Remove BOM if present
+  const clean = content.replace(/^\uFEFF/, "");
+  const lines = clean.split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) throw new Error("CSV vazio ou sem dados");
 
   const delimiter = detectDelimiter(lines[0]);
@@ -169,9 +172,18 @@ export function calcDerived(dezenas: number[]) {
 }
 
 export async function importConcursos(rows: ConcursoRow[], atomic: boolean): Promise<ImportResult> {
-  // Check existing
-  const { data: existing } = await supabase.from("concursos").select("numero_concurso");
-  const existingSet = new Set((existing || []).map(e => e.numero_concurso));
+  // Check existing - fetch ALL concursos (paginate past 1000 limit)
+  const allExisting: number[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data } = await supabase.from("concursos").select("numero_concurso").range(from, from + pageSize - 1);
+    if (!data || data.length === 0) break;
+    allExisting.push(...data.map(e => e.numero_concurso));
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  const existingSet = new Set(allExisting);
 
   const toInsert: any[] = [];
   let duplicados = 0;
