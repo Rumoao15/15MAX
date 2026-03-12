@@ -215,11 +215,10 @@ export async function importConcursos(rows: ConcursoRow[], atomic: boolean): Pro
     }
   }
 
-  // Update repetidas_do_anterior
-  await updateRepetidasDoAnterior();
-  
-  // Recalculate statistics
-  await recalcularEstatisticas();
+  // Run server-side recalculations (single RPC call each, no round-trips)
+  await supabase.rpc("recalcular_repetidas_do_anterior");
+  await supabase.rpc("recalcular_estatisticas");
+  await supabase.rpc("recalcular_trincas");
 
   return {
     total_linhas: rows.length,
@@ -229,115 +228,7 @@ export async function importConcursos(rows: ConcursoRow[], atomic: boolean): Pro
   };
 }
 
-async function updateRepetidasDoAnterior() {
-  const { data: concursos } = await supabase
-    .from("concursos")
-    .select("id, numero_concurso, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15")
-    .order("numero_concurso", { ascending: true });
-
-  if (!concursos || concursos.length < 2) return;
-
-  for (let i = 1; i < concursos.length; i++) {
-    const prev = getDezenas(concursos[i - 1]);
-    const curr = getDezenas(concursos[i]);
-    const prevSet = new Set(prev);
-    const repetidas = curr.filter(d => prevSet.has(d)).length;
-
-    await supabase.from("concursos").update({ repetidas_do_anterior: repetidas }).eq("id", concursos[i].id);
-  }
-}
-
-function getDezenas(row: any): number[] {
-  return [row.d1, row.d2, row.d3, row.d4, row.d5, row.d6, row.d7, row.d8, row.d9, row.d10, row.d11, row.d12, row.d13, row.d14, row.d15];
-}
-
-async function recalcularEstatisticas() {
-  const { data: concursos } = await supabase
-    .from("concursos")
-    .select("numero_concurso, d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14, d15")
-    .order("numero_concurso", { ascending: true });
-
-  if (!concursos || concursos.length === 0) return;
-
-  // Frequency and delay calculation
-  const freq: Record<number, number> = {};
-  const lastSeen: Record<number, number> = {};
-  const maxDelay: Record<number, number> = {};
-  const prevSeen: Record<number, number> = {};
-
-  for (let d = 1; d <= 25; d++) {
-    freq[d] = 0;
-    lastSeen[d] = -1;
-    maxDelay[d] = 0;
-    prevSeen[d] = -1;
-  }
-
-  for (let i = 0; i < concursos.length; i++) {
-    const dezenas = getDezenas(concursos[i]);
-    const dezSet = new Set(dezenas);
-
-    for (let d = 1; d <= 25; d++) {
-      if (dezSet.has(d)) {
-        freq[d]++;
-        if (prevSeen[d] >= 0) {
-          const gap = i - prevSeen[d] - 1;
-          if (gap > maxDelay[d]) maxDelay[d] = gap;
-        }
-        prevSeen[d] = i;
-        lastSeen[d] = i;
-      }
-    }
-  }
-
-  const totalConcursos = concursos.length;
-  for (let d = 1; d <= 25; d++) {
-    const atrasoAtual = lastSeen[d] >= 0 ? totalConcursos - 1 - lastSeen[d] : totalConcursos;
-    // Check final gap for max delay
-    if (atrasoAtual > maxDelay[d]) maxDelay[d] = atrasoAtual;
-
-    await supabase.from("estatisticas_dezenas").update({
-      frequencia_total: freq[d],
-      atraso_atual: atrasoAtual,
-      maior_atraso_historico: maxDelay[d],
-    }).eq("dezena", d);
-  }
-
-  // Recalculate trincas (top 100 only for performance)
-  await recalcularTrincas(concursos);
-}
-
-async function recalcularTrincas(concursos: any[]) {
-  // Truncate
-  await supabase.from("trincas_frequentes").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-
-  const trincaMap = new Map<string, number>();
-
-  for (const c of concursos) {
-    const dezenas = getDezenas(c).sort((a: number, b: number) => a - b);
-    for (let i = 0; i < 13; i++) {
-      for (let j = i + 1; j < 14; j++) {
-        for (let k = j + 1; k < 15; k++) {
-          const key = `${dezenas[i]}-${dezenas[j]}-${dezenas[k]}`;
-          trincaMap.set(key, (trincaMap.get(key) || 0) + 1);
-        }
-      }
-    }
-  }
-
-  // Sort and take top 200
-  const sorted = [...trincaMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 200);
-
-  if (sorted.length > 0) {
-    const batch = sorted.map(([key, freq]) => {
-      const [d1, d2, d3] = key.split("-").map(Number);
-      return { dezena1: d1, dezena2: d2, dezena3: d3, frequencia_trinca: freq };
-    });
-
-    for (let i = 0; i < batch.length; i += 50) {
-      await supabase.from("trincas_frequentes").insert(batch.slice(i, i + 50));
-    }
-  }
-}
+// Server-side functions handle all recalculations now via RPC
 
 export function exportToCSV(data: any[], filename: string) {
   if (!data.length) return;

@@ -262,7 +262,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      recalcular_estatisticas: { Args: never; Returns: undefined }
+      recalcular_repetidas_do_anterior: { Args: never; Returns: undefined }
+      recalcular_trincas: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
