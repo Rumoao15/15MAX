@@ -65,7 +65,9 @@ function parseDate(value: string): Date | null {
 }
 
 export function parseCSV(content: string) {
-  const lines = content.split(/\r?\n/).filter(l => l.trim());
+  // Remove BOM if present
+  const clean = content.replace(/^\uFEFF/, "");
+  const lines = clean.split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) throw new Error("CSV vazio ou sem dados");
 
   const delimiter = detectDelimiter(lines[0]);
