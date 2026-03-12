@@ -25,6 +25,7 @@ export interface ImportResult {
 function normalizeHeader(h: string): string {
   return h
     .trim()
+    .replace(/^\uFEFF/, "")
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
