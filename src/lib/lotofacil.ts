@@ -172,9 +172,18 @@ export function calcDerived(dezenas: number[]) {
 }
 
 export async function importConcursos(rows: ConcursoRow[], atomic: boolean): Promise<ImportResult> {
-  // Check existing
-  const { data: existing } = await supabase.from("concursos").select("numero_concurso");
-  const existingSet = new Set((existing || []).map(e => e.numero_concurso));
+  // Check existing - fetch ALL concursos (paginate past 1000 limit)
+  const allExisting: number[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data } = await supabase.from("concursos").select("numero_concurso").range(from, from + pageSize - 1);
+    if (!data || data.length === 0) break;
+    allExisting.push(...data.map(e => e.numero_concurso));
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+  const existingSet = new Set(allExisting);
 
   const toInsert: any[] = [];
   let duplicados = 0;
