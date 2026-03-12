@@ -229,7 +229,6 @@ export async function importConcursos(rows: ConcursoRow[], atomic: boolean): Pro
 }
 
 // Server-side functions handle all recalculations now via RPC
-}
 
 export function exportToCSV(data: any[], filename: string) {
   if (!data.length) return;
