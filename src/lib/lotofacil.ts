@@ -34,7 +34,7 @@ function normalizeHeader(h: string): string {
     .replace(/^_|_$/g, "");
 }
 
-const CONCURSO_ALIASES = ["concurso", "nr_concurso", "numero_concurso", "n_concurso", "numconcurso", "no_concurso"];
+const CONCURSO_ALIASES = ["concurso", "nr_concurso", "numero_concurso", "n_concurso", "numconcurso", "no_concurso", "n_concurso", "num_concurso"];
 const DATA_ALIASES = ["data", "data_concurso", "dt", "dt_concurso", "data_sorteio"];
 
 function getDezenaAliases(n: number): string[] {
