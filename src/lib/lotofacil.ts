@@ -215,11 +215,10 @@ export async function importConcursos(rows: ConcursoRow[], atomic: boolean): Pro
     }
   }
 
-  // Update repetidas_do_anterior
-  await updateRepetidasDoAnterior();
-  
-  // Recalculate statistics
-  await recalcularEstatisticas();
+  // Run server-side recalculations (single RPC call each, no round-trips)
+  await supabase.rpc("recalcular_repetidas_do_anterior");
+  await supabase.rpc("recalcular_estatisticas");
+  await supabase.rpc("recalcular_trincas");
 
   return {
     total_linhas: rows.length,
