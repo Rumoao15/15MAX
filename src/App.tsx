@@ -11,6 +11,7 @@ import ParesImparesPage from "@/pages/ParesImparesPage";
 import SomasPage from "@/pages/SomasPage";
 import TrincasPage from "@/pages/TrincasPage";
 import ProspeccaoPage from "@/pages/ProspeccaoPage";
+import Gerador9x6Page from "@/pages/Gerador9x6Page";
 import JogosPage from "@/pages/JogosPage";
 import NotFound from "@/pages/NotFound";
 
