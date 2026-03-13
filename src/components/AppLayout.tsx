@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { 
   Upload, List, BarChart3, Hash, TrendingUp, 
-  Triangle, Lightbulb, Gamepad2, Clover
+  Triangle, Lightbulb, Crown, Gamepad2, Clover
 } from "lucide-react";
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { path: "/somas", label: "Somas, Linhas e Colunas", icon: TrendingUp },
   { path: "/trincas", label: "Trincas Frequentes", icon: Triangle },
   { path: "/prospeccao", label: "Prospecção Inteligente", icon: Lightbulb },
+  { path: "/gerador-9x6", label: "Gerador 9×6 Ranking", icon: Crown },
   { path: "/jogos", label: "Jogos Gerados", icon: Gamepad2 },
 ];
 

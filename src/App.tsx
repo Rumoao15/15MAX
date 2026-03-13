@@ -11,6 +11,7 @@ import ParesImparesPage from "@/pages/ParesImparesPage";
 import SomasPage from "@/pages/SomasPage";
 import TrincasPage from "@/pages/TrincasPage";
 import ProspeccaoPage from "@/pages/ProspeccaoPage";
+import Gerador9x6Page from "@/pages/Gerador9x6Page";
 import JogosPage from "@/pages/JogosPage";
 import NotFound from "@/pages/NotFound";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/somas" element={<SomasPage />} />
             <Route path="/trincas" element={<TrincasPage />} />
             <Route path="/prospeccao" element={<ProspeccaoPage />} />
+            <Route path="/gerador-9x6" element={<Gerador9x6Page />} />
             <Route path="/jogos" element={<JogosPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
