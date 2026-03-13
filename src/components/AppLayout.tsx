@@ -12,6 +12,7 @@ const navItems = [
   { path: "/somas", label: "Somas, Linhas e Colunas", icon: TrendingUp },
   { path: "/trincas", label: "Trincas Frequentes", icon: Triangle },
   { path: "/prospeccao", label: "Prospecção Inteligente", icon: Lightbulb },
+  { path: "/gerador-9x6", label: "Gerador 9×6 Ranking", icon: Crown },
   { path: "/jogos", label: "Jogos Gerados", icon: Gamepad2 },
 ];
 
