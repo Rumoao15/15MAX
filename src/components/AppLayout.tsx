@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { 
   Upload, List, BarChart3, Hash, TrendingUp, 
-  Triangle, Lightbulb, Gamepad2, Clover
+  Triangle, Lightbulb, Crown, Gamepad2, Clover
 } from "lucide-react";
 
 const navItems = [
