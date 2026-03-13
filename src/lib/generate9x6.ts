@@ -205,131 +205,114 @@ export function generateGames9by6Ranking(
 
   const MAX_ATTEMPTS = 200;
 
+  // Pre-generate all unique swap combinations for systematic variation
+  // For A: pick which altA elements swap in, and which baseA9 elements swap out
+  // For B: same logic
+  function generateSwapCombos(base: number[], alts: number[], maxSwaps: number): number[][] {
+    const combos: number[][] = [];
+    // Generate all possible 1-swap and 2-swap results
+    for (let i = 0; i < alts.length; i++) {
+      for (let j = 0; j < base.length; j++) {
+        const c1 = [...base];
+        c1[j] = alts[i];
+        combos.push(c1.sort((a, b) => a - b));
+        if (maxSwaps >= 2) {
+          for (let i2 = i + 1; i2 < alts.length; i2++) {
+            for (let j2 = j + 1; j2 < base.length; j2++) {
+              const c2 = [...base];
+              c2[j] = alts[i];
+              c2[j2] = alts[i2];
+              if (new Set(c2).size === c2.length) {
+                combos.push(c2.sort((a, b) => a - b));
+              }
+            }
+          }
+        }
+      }
+    }
+    return combos;
+  }
+
+  const aCombos = altA.length > 0 ? generateSwapCombos(baseA9, altA, 2) : [];
+  const bCombos = altB.length > 0 ? generateSwapCombos(baseB6, altB, 2) : [];
+
   for (let g = 0; g < 5; g++) {
     let bestGame: { a9: number[]; b6: number[] } | null = null;
     let bestScore = -Infinity;
-    const attempts = g === 0 ? 1 : MAX_ATTEMPTS; // first game = pure base
 
-    for (let att = 0; att < attempts; att++) {
-      // Variation for A
-      let a9 = [...baseA9];
-      if (g > 0 && altA.length > 0) {
-        // Guarantee at least 1 swap, up to 2
-        const numSwapsA = Math.min(1 + Math.floor(rng() * 2), altA.length, 2);
-        const availableAlt = altA.filter(d => !a9.includes(d));
-        for (let s = 0; s < numSwapsA && availableAlt.length > 0; s++) {
-          const scored = availableAlt.map(d => ({ d, s: scoreForVariation(d, usedCounts) + rng() * 0.15 }));
-          scored.sort((x, y) => y.s - x.s);
-          const candidate = scored[0]?.d;
-          if (candidate) {
-            const a9Scored = a9.map(d => ({ d, s: scoreForVariation(d, usedCounts) }));
-            a9Scored.sort((x, y) => x.s - y.s);
-            const toRemove = a9Scored[s].d; // remove s-th worst
-            a9 = a9.filter(d => d !== toRemove);
-            a9.push(candidate);
-            availableAlt.splice(availableAlt.indexOf(candidate), 1);
-          }
-        }
-      }
+    if (g === 0) {
+      // First game: pure base
+      bestGame = { a9: [...baseA9], b6: [...baseB6] };
+    } else {
+      // Try systematic combinations + random perturbations
+      const candidates: { a9: number[]; b6: number[]; score: number }[] = [];
 
-      // Variation for B
-      let b6 = [...baseB6];
-      if (g > 0 && altB.length > 0) {
-        const numSwapsB = Math.min(1 + Math.floor(rng() * 2), altB.length, 2);
-        const availableAlt = altB.filter(d => !b6.includes(d));
-        for (let s = 0; s < numSwapsB && availableAlt.length > 0; s++) {
-          const scored = availableAlt.map(d => ({ d, s: scoreForVariation(d, usedCounts) + rng() * 0.15 }));
-          scored.sort((x, y) => y.s - x.s);
-          const candidate = scored[0]?.d;
-          if (candidate) {
-            const b6Scored = b6.map(d => ({ d, s: scoreForVariation(d, usedCounts) }));
-            b6Scored.sort((x, y) => x.s - y.s);
-            const toRemove = b6Scored[s].d;
-            b6 = b6.filter(d => d !== toRemove);
-            b6.push(candidate);
-            availableAlt.splice(availableAlt.indexOf(candidate), 1);
-          }
-        }
-      }
+      // Systematic: try all aCombos × base B6, and base A9 × bCombos, and aCombos × bCombos
+      const aOptions = [baseA9, ...aCombos];
+      const bOptions = [baseB6, ...bCombos];
 
-      const combined = [...a9, ...b6];
+      for (const a9 of aOptions) {
+        for (const b6 of bOptions) {
+          // Skip base×base (that's game 0)
+          if (a9 === baseA9 && b6 === baseB6) continue;
 
-      // Validate uniqueness and 9/6
-      if (new Set(combined).size !== 15) continue;
-      if (a9.length !== 9 || b6.length !== 6) continue;
+          const combined = [...a9, ...b6];
+          if (new Set(combined).size !== 15) continue;
 
-      // Check filters
-      if (!passesFilters(combined, options)) {
-        // Try single swap within same group to fix
-        let fixed = false;
-        for (let fix = 0; fix < 10 && !fixed; fix++) {
-          // Pick random position and swap
-          const isA = rng() > 0.5;
-          if (isA) {
-            const pool = altA.filter(d => !a9.includes(d));
-            if (pool.length > 0) {
-              const swap = pool[Math.floor(rng() * pool.length)];
-              const idx = Math.floor(rng() * a9.length);
-              const old = a9[idx];
-              a9[idx] = swap;
-              const newCombined = [...a9, ...b6];
-              if (new Set(newCombined).size === 15 && passesFilters(newCombined, options)) {
-                fixed = true;
-              } else {
-                a9[idx] = old;
-              }
+          if (!passesFilters(combined, options)) continue;
+
+          const final = combined.sort((x, y) => x - y);
+
+          // Check not identical to existing games
+          let dominated = false;
+          for (const prev of games) {
+            if (JSON.stringify(final) === JSON.stringify(prev.dezenas)) {
+              dominated = true;
+              break;
             }
-          } else {
-            const pool = altB.filter(d => !b6.includes(d));
-            if (pool.length > 0) {
-              const swap = pool[Math.floor(rng() * pool.length)];
-              const idx = Math.floor(rng() * b6.length);
-              const old = b6[idx];
-              b6[idx] = swap;
-              const newCombined = [...a9, ...b6];
-              if (new Set(newCombined).size === 15 && passesFilters(newCombined, options)) {
-                fixed = true;
-              } else {
-                b6[idx] = old;
-              }
+            if (intersectionCount(final, prev.dezenas) > options.maxIntersection) {
+              dominated = true;
+              break;
             }
           }
+          if (dominated) continue;
+
+          const gameScore = final.reduce((sum, d) => sum + scoreForVariation(d, usedCounts), 0)
+            + rng() * 0.5; // small random tiebreaker
+
+          candidates.push({ a9: [...a9], b6: [...b6], score: gameScore });
         }
-        if (!fixed) continue;
       }
 
-      // Check diversity with existing games
-      const final = [...a9, ...b6].sort((x, y) => x - y);
-      let tooSimilar = false;
-      for (const prev of games) {
-        if (intersectionCount(final, prev.dezenas) > options.maxIntersection) {
-          tooSimilar = true;
-          break;
-        }
-      }
-      // Identical check
-      for (const prev of games) {
-        if (JSON.stringify(final) === JSON.stringify(prev.dezenas)) {
-          tooSimilar = true;
-          break;
-        }
-      }
-      if (tooSimilar) continue;
+      // Sort by score descending and pick the best
+      candidates.sort((a, b) => b.score - a.score);
 
-      // Score this game
-      const gameScore = final.reduce((sum, d) => sum + scoreForVariation(d, usedCounts), 0);
-      if (gameScore > bestScore) {
-        bestScore = gameScore;
-        bestGame = { a9: [...a9], b6: [...b6] };
+      if (candidates.length > 0) {
+        // Pick from top candidates with some randomness
+        const pickIdx = Math.min(Math.floor(rng() * Math.min(candidates.length, 5)), candidates.length - 1);
+        const pick = candidates[pickIdx];
+        bestGame = { a9: pick.a9, b6: pick.b6 };
       }
     }
 
     if (!bestGame) {
-      // Fallback: use base
-      bestGame = { a9: [...baseA9], b6: [...baseB6] };
-      if (g > 0) {
-        warnings.push(`Jogo ${g + 1}: não foi possível satisfazer 100% dos filtros, exibindo a melhor combinação encontrada.`);
+      // Fallback: force a variation by cycling through altA/altB deterministically
+      const a9 = [...baseA9];
+      const b6 = [...baseB6];
+      if (altA.length > 0) {
+        const swapIdx = (g - 1) % altA.length;
+        a9[a9.length - 1 - (g % a9.length)] = altA[swapIdx];
       }
+      if (altB.length > 0) {
+        const swapIdx = (g - 1) % altB.length;
+        b6[b6.length - 1 - (g % b6.length)] = altB[swapIdx];
+      }
+      if (new Set([...a9, ...b6]).size === 15) {
+        bestGame = { a9, b6 };
+      } else {
+        bestGame = { a9: [...baseA9], b6: [...baseB6] };
+      }
+      warnings.push(`Jogo ${g + 1}: não foi possível satisfazer 100% dos filtros, exibindo a melhor combinação encontrada.`);
     }
 
     const finalDezenas = [...bestGame.a9, ...bestGame.b6].sort((a, b) => a - b);
