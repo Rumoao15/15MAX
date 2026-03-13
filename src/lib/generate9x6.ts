@@ -213,38 +213,41 @@ export function generateGames9by6Ranking(
     for (let att = 0; att < attempts; att++) {
       // Variation for A
       let a9 = [...baseA9];
-      if (g > 0) {
-        const numSwapsA = Math.min(Math.floor(rng() * 3), altA.length, 2); // 0-2 swaps
-        for (let s = 0; s < numSwapsA; s++) {
-          // Score alternates
-          const scored = altA.map(d => ({ d, s: scoreForVariation(d, usedCounts) + rng() * 0.05 }));
+      if (g > 0 && altA.length > 0) {
+        // Guarantee at least 1 swap, up to 2
+        const numSwapsA = Math.min(1 + Math.floor(rng() * 2), altA.length, 2);
+        const availableAlt = altA.filter(d => !a9.includes(d));
+        for (let s = 0; s < numSwapsA && availableAlt.length > 0; s++) {
+          const scored = availableAlt.map(d => ({ d, s: scoreForVariation(d, usedCounts) + rng() * 0.15 }));
           scored.sort((x, y) => y.s - x.s);
-          const candidate = scored[s % scored.length]?.d;
-          if (candidate && !a9.includes(candidate)) {
-            // Remove worst-scoring in current a9
+          const candidate = scored[0]?.d;
+          if (candidate) {
             const a9Scored = a9.map(d => ({ d, s: scoreForVariation(d, usedCounts) }));
             a9Scored.sort((x, y) => x.s - y.s);
-            const toRemove = a9Scored[0].d;
+            const toRemove = a9Scored[s].d; // remove s-th worst
             a9 = a9.filter(d => d !== toRemove);
             a9.push(candidate);
+            availableAlt.splice(availableAlt.indexOf(candidate), 1);
           }
         }
       }
 
       // Variation for B
       let b6 = [...baseB6];
-      if (g > 0) {
-        const numSwapsB = Math.min(Math.floor(rng() * 3), altB.length, 2);
-        for (let s = 0; s < numSwapsB; s++) {
-          const scored = altB.map(d => ({ d, s: scoreForVariation(d, usedCounts) + rng() * 0.05 }));
+      if (g > 0 && altB.length > 0) {
+        const numSwapsB = Math.min(1 + Math.floor(rng() * 2), altB.length, 2);
+        const availableAlt = altB.filter(d => !b6.includes(d));
+        for (let s = 0; s < numSwapsB && availableAlt.length > 0; s++) {
+          const scored = availableAlt.map(d => ({ d, s: scoreForVariation(d, usedCounts) + rng() * 0.15 }));
           scored.sort((x, y) => y.s - x.s);
-          const candidate = scored[s % scored.length]?.d;
-          if (candidate && !b6.includes(candidate)) {
+          const candidate = scored[0]?.d;
+          if (candidate) {
             const b6Scored = b6.map(d => ({ d, s: scoreForVariation(d, usedCounts) }));
             b6Scored.sort((x, y) => x.s - y.s);
-            const toRemove = b6Scored[0].d;
+            const toRemove = b6Scored[s].d;
             b6 = b6.filter(d => d !== toRemove);
             b6.push(candidate);
+            availableAlt.splice(availableAlt.indexOf(candidate), 1);
           }
         }
       }
