@@ -1,10 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { 
   Upload, List, BarChart3, Hash, TrendingUp, 
-  Triangle, Lightbulb, Crown, Gamepad2, Clover, LogOut
+  Triangle, Lightbulb, Crown, Gamepad2, Clover
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
 
 const navItems = [
   { path: "/", label: "Importar Resultados", icon: Upload },
@@ -20,11 +18,9 @@ const navItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const { signOut, user } = useAuth();
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar */}
       <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col shrink-0">
         <div className="p-4 border-b border-sidebar-border">
           <div className="flex items-center gap-2">
@@ -58,15 +54,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="p-3 border-t border-sidebar-border">
-          <p className="text-xs text-sidebar-foreground/50 truncate mb-2">{user?.email}</p>
-          <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70" onClick={() => signOut()}>
-            <LogOut className="h-4 w-4 mr-2" /> Sair
-          </Button>
-        </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 overflow-auto">
         <div className="p-6 max-w-7xl mx-auto">
           {children}
