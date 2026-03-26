@@ -58,6 +58,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
+        <div className="p-3 border-t border-sidebar-border">
+          <p className="text-xs text-sidebar-foreground/50 truncate mb-2">{user?.email}</p>
+          <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground/70" onClick={() => signOut()}>
+            <LogOut className="h-4 w-4 mr-2" /> Sair
+          </Button>
+        </div>
       </aside>
 
       {/* Main */}
