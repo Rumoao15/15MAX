@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { 
   Upload, List, BarChart3, Hash, TrendingUp, 
-  Triangle, Lightbulb, Crown, Gamepad2, Clover
+  Triangle, Lightbulb, Crown, Gamepad2, Clover, LogOut
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { path: "/", label: "Importar Resultados", icon: Upload },
